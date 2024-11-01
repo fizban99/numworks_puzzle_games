@@ -190,10 +190,24 @@ def cur(c, pos):
 
 def move(vx, vy):
     global pos
-    cur((255, 255, 255), pos)
-    pos[0]=(pos[0]+vx)%4
-    pos[1]=(pos[1]+vy)%4
-    cur((0, 0, 255), pos)
+    global solved
+    if pos[0]-vx<0 or pos[0]-vx>3 or pos[1]-vy<0 or pos[1]-vy>3:
+        return
+    new_x = (pos[0]-vx)
+    new_y = (pos[1]-vy)
+    new_index = new_y * 4 + new_x
+    pos_index = pos[1] * 4 + pos[0]
+    clear_tile(new_x, new_y)
+    tile = tiles[new_index] 
+    img.s_img(data[tile])
+    img.dr_img(pos[0] * 27 * z + 3, pos[1] * 27 * z + 3)
+    cur((255, 255, 255), (pos[0], pos[1]))
+    tiles[pos_index], tiles[new_index] = tiles[new_index], tiles[pos_index]
+    matches = show_matches(tiles)
+    pos[0], pos[1] = new_x, new_y
+    if matches == 16:
+        ds("SOLVED!!!",226,10,(0,0,0),(0,255,0))
+        solved = True                    
     
 def show_matches(tiles):
     matches = 0
@@ -270,10 +284,12 @@ b'DOAAYmwBsh4fHh4eEAoPHBYXEhIfHR0PExoUERsaHBYaGpgdHh4PChASEhgeHR0dEhEUGhQbFhbDIo
 b'DGEAeWwBthobGxbAERYbFBQXEhISEA0EAQEAwAIbFhwcFsABFxERFRUXEAYNA8GUABYcshgVFRUREhITEhMKBwYCwaWzERexgBcXFwoKDQXBphAQEBKDwGK2EAfBlgCqF8fgtBISBw8ZBATBqMYgB8ZAEhIKCgYEBQrBlwDGUrESERAQEwQKBQLBlgARFBQUGhQXDwYTEw8ZBcToAAAagM6wExMKEhgCBs02waMUxOHJ8AQFBQQAwakbERMTExAPBQTIMAcEAgbBuBAXtBAKDQoEBgcKBAQGw1gGChASB5gHCAjB4QXBqAsHBw0NBw0ICQgICAsHBgPBqAcNCwsJwALBoQrIaQYLCQwMDJmECNdgwagKB8GhwbG3BgTBqQIEDcNiDMaxAwXeFcGiAgUNlQwIC8hAAQPDWgIZBAfLkAkLDQoFALbBpx0dHQMGymENBwcCmgQEy/YdHh0ZDxAKCgfa4AEBBgYDAsG2mgMCqwQDCgIAAgbFAATbNR0e30DVoAUG1ZECAYADzCQdHQ8ZHhkZA+SAAQECAgK/4fDBoh4ZDxgdHcGBAgPAAojKVA==',
 )
 
+
+
 z = 2
 img = TI(fb64(palette), z)
 
-key_pressing={KEY_OK:0,KEY_PLUS:0,KEY_MINUS:0,KEY_ZERO:0,KEY_ONE:0,KEY_TWO:0,KEY_THREE:0,KEY_FOUR:0,KEY_FIVE:0,KEY_SIX:0}
+key_pressing={KEY_OK:0,KEY_PLUS:0,KEY_MINUS:0,KEY_LEFT:0,KEY_UP:0,KEY_RIGHT:0,KEY_DOWN:0}
 key_pressed={k:0 for k in key_pressing}
 
 tiles = [t for t in range(16)] 
@@ -282,7 +298,6 @@ draw_tiles(False)
 
 ds("[+] mix",226,160,FG,BG)
 pos = [_BLNK//4, _BLNK%4]
-cur((0, 0, 255), pos)
 show_matches(tiles)
 solved = True
 while True:
@@ -294,29 +309,16 @@ while True:
                 key_pressing[k]=1
         else:
             key_pressing[k]=0
-    if keydown(KEY_LEFT): move(-1,0)
-    elif keydown(KEY_UP): move(0,-1)
-    elif keydown(KEY_RIGHT): move(1,0)
-    elif keydown(KEY_DOWN): move(0,1)
-    if key_pressed[KEY_OK] and not solved:
-        for vx, vy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
-            new_x, new_y = pos[0] + vx, pos[1] + vy
-            if 0 <= new_x < 4 and 0 <= new_y < 4:
-                new_index = new_y * 4 + new_x
-                pos_index = pos[1] * 4 + pos[0]
-                if tiles[new_index] == _BLNK:
-                    clear_tile(pos[0], pos[1])
-                    tile = tiles[pos_index] 
-                    img.s_img(data[tile])
-                    img.dr_img(new_x * 27 * z + 3, new_y * 27 * z + 3)
-                    cur((255, 255, 255), (new_x, new_y))
-                    cur((0, 0, 255), pos)
-                    tiles[pos_index], tiles[new_index] = _BLNK, tiles[pos_index]
-                    matches = show_matches(tiles)
-                    if matches == 16:
-                        ds("SOLVED!!!",226,10,(0,0,0),(0,255,0))
-                        solved = True                    
-                    break
+    if not solved:
+        if key_pressed[KEY_LEFT]:
+            move(-1,0)
+        elif key_pressed[KEY_UP]: 
+            move(0,-1)
+        elif key_pressed[KEY_RIGHT]:
+            move(1,0)
+        elif key_pressed[KEY_DOWN]:
+            move(0,1)
+   
     if key_pressed[KEY_PLUS]:
         fr(226,10,100,20,BG)        
         tiles = shuffle()
@@ -328,4 +330,7 @@ while True:
             tiles[-1], tiles[-2] = tiles[-2], tiles[-1]            
         draw_tiles()
         show_matches(tiles)
+        index_blnk = tiles.index(_BLNK)
+        pos = [index_blnk%4, index_blnk//4]
+        solved = False
     slp(.2)
