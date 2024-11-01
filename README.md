@@ -25,6 +25,16 @@ The main classes and functions are:
 ## Installation and Usage
 
 To use this game on your Numworks calculator, load the Python code file into your calculator from the Numworks website (https://my.numworks.com/python/fizban). The game works with the ion and kandinsky libraries for PC as well. To work on the Numworks, the only modifications are to remove the lambda function and to change the constant to 1 instead of "int".
+So this:
+```
+const = lambda x: x
+_ID = const("int")
+```
+Becomes:
+```
+_ID = const(1)
+```
+
 
 The game interface allows for the following interactions:
 
