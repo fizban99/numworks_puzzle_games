@@ -13,8 +13,6 @@ This is a classic 15-tile sliding puzzle game developed for the Numworks calcula
 ## Code Structure
 
 The main classes and functions are:
-
-The main classes and functions are:
 - **`TP` (Tile Properties)**: Encodes properties for tiles, such as width and length, for decompression and display.
 - **`SW` (Sliding Window)**: Manages the sliding window for decompression.
 - **`TI` (Tile Image)**: Handles decompression and display of tile images.
